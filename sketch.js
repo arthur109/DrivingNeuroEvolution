@@ -1,12 +1,12 @@
 var bob;
 var tileSize;
 var offset;
-var genSize = 1;
+var genSize = 100;
 var orgs = []
 var fittest = []
 var organismCounter = genSize
 var genCount = 1;
-var timerTime = 500;
+var timerTime = 700;
 var timerCounter = 0;
 var CIRCLE = Math.PI * 2;
 var mutationProb = 0.03
@@ -27,14 +27,14 @@ var startPos = {
 }
 
 function displayMap(scale) {
-  stroke(0)
+  stroke(35)
   strokeWeight(scale / 15)
   for (var y = 0; y < world.length; y++) {
     for (var x = 0; x < world[y].length; x++) {
       if (world[y][x] == 0) {
-        fill(0)
+        fill(25)
       } else {
-        fill(255)
+        fill(245, 240, 237)
       }
       rect(offset.x + x * scale, offset.y + y * scale, scale, scale)
     }
@@ -111,7 +111,7 @@ function createNewGeneration(generationSize) {
     this.rand.mutate(mutationProb)
     //console.log(this.rand)
     this.temp = new Org(startPos.x, startPos.y, i)
-    this.temp.brain = this.rand.copy()
+    this.temp.brain = this.rand
     orgs.push({
       score: 0,
       animal: temp
@@ -126,10 +126,10 @@ function ray(xpos, ypos, xspeed, yspeed, limit) {
     this.value = look(Math.floor(tempX), Math.floor(tempY))
     //print("ran ray")
     //print(this.value)
-    stroke(0)
-    strokeWeight(TileToPixel(0.02))
+    // stroke(0)
+    // strokeWeight(TileToPixel(0.02))
 
-    line(TileToPixelX(xpos), TileToPixelY(ypos), TileToPixelX(xpos + xspeed * 2.5), TileToPixelY(ypos + yspeed * 2.5))
+    // line(TileToPixelX(xpos), TileToPixelY(ypos), TileToPixelX(xpos + xspeed * 2.5), TileToPixelY(ypos + yspeed * 2.5))
     if (this.value == 0) {
       //print("drew line");
       //ellipse(TileToPixelX(this.tempX), TileToPixelY(this.tempY), 5, 5)
@@ -153,7 +153,7 @@ function findFittest(generation) {
   for (var i = 0; i < generation.length; i++) {
     if (generation[i].score >= this.maxFit) {
       this.specimen = generation[i].animal.brain.copy()
-      fittest.push(this.specimen.copy())
+      fittest.push(this.specimen)
     }
   }
 }
@@ -161,7 +161,7 @@ function findFittest(generation) {
 function setup() {
   noSmooth()
   noStroke();
-  frameRate(1)
+  //frameRate(1)
   createCanvas(windowWidth, windowHeight);
   createGeneration(genSize)
 }
@@ -203,15 +203,15 @@ class Org {
     this.basicRotation = 22;
     this.radians = ((this.basicRotation / 5) + CIRCLE) % (CIRCLE);
     this.direction.set(cos(this.radians), sin(this.radians))
-    this.brain = new NeuralNetwork(5, 1, 4)
+    this.brain = new NeuralNetwork(5, 4, 2)
     //console.log(this.brain)
     this.futureMove = []
   }
   move() {
-    this.basicRotation = this.basicRotation + this.futureMove[0] - this.futureMove[1]
+    this.basicRotation = this.basicRotation + this.futureMove[0]
     //console.log(this.futureMove[0], this.futureMove[1])
-    this.speed = this.speed + this.futureMove[1] - this.futureMove[2]
-    this.speed = clamp(this.speed, -0.1, 0.1)
+    this.speed = this.speed + this.futureMove[1]
+    this.speed = clamp(this.speed, -0.05, 0.05)
     this.radians = ((this.basicRotation / 5) + CIRCLE) % (CIRCLE);
     this.direction.set(cos(this.radians), sin(this.radians))
     this.position.add(p5.Vector.mult(this.direction, this.speed));
@@ -244,9 +244,11 @@ class Org {
     //console.log(this.futureMove)
   }
   render() {
-    noStroke();
+    stroke("#fcbf49")
     fill(this.uniqueColor)
-    ellipse(TileToPixelX(this.position.x), TileToPixelY(this.position.y), TileToPixel(this.radius * 2), TileToPixel(this.radius * 2))
+    line(TileToPixelX(this.position.x - this.direction.x * 0.1), TileToPixelY(this.position.y - this.direction.y * 0.1), TileToPixelX(this.position.x + this.direction.x * 0.1), TileToPixelY(this.position.y + this.direction.y * 0.1))
+    noStroke();
+    //ellipse(TileToPixelX(this.position.x), TileToPixelY(this.position.y), TileToPixel(this.radius * 2), TileToPixel(this.radius * 2))
   }
   run() {
     if (this.alive) {
